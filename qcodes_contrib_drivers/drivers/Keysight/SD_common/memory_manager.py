@@ -30,7 +30,7 @@ class MemoryManager:
             self.memory_manager.release(self)
 
     @dataclass
-    class _MemorySlot:
+    class MemorySlot:
         number: int
         size: int
         allocated: bool
@@ -57,8 +57,8 @@ class MemoryManager:
         self._created_size = 0
         self._max_waveform_size = 0
 
-        self._free_memory_slots: Dict[int, MemoryManager._MemorySlot] = {}
-        self._slots: List[MemoryManager._MemorySlot] = []
+        self._free_memory_slots: Dict[int, MemoryManager.MemorySlot] = {}
+        self._slots: List[MemoryManager.MemorySlot] = []
         self._slot_sizes = sorted([size for size,_ in MemoryManager.memory_sizes])
 
         self.set_waveform_limit(waveform_size_limit)
@@ -168,7 +168,7 @@ class MemoryManager:
             for i in range(amount):
                 number = len(slots)
                 free_slots[size].append(number)
-                slots.append(MemoryManager._MemorySlot(number, size, False, False, 0))
+                slots.append(MemoryManager.MemorySlot(number, size, False, False, 0))
 
         self._free_memory_slots = free_slots
         self._slots = slots
