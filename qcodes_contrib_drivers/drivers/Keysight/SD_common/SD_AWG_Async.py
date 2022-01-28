@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import threading
 import queue
-import sys
 from typing import Dict, List, Union, Optional, TypeVar, Callable, Any, cast
 import time
 import logging
@@ -550,12 +549,15 @@ class SD_AWG_Async(SD_AWG):
                                 f'It is uploaded to {waveform_ref.awg_name}')
 
             self.log.debug(f'Enqueue {waveform_ref.wave_number}')
-            if not waveform_ref.is_uploaded():
-                start = time.perf_counter()
-                self.log.debug(f'Waiting till wave {waveform_ref.wave_number} is uploaded')
-                waveform_ref.wait_uploaded()
-                duration = time.perf_counter() - start
-                self.log.info(f'Waited {duration*1000:5.1f} ms for upload of wave {waveform_ref.wave_number}')
+            try:
+                if not waveform_ref.is_uploaded():
+                    start = time.perf_counter()
+                    self.log.debug(f'Waiting till wave {waveform_ref.wave_number} is uploaded')
+                    waveform_ref.wait_uploaded()
+                    duration = time.perf_counter() - start
+                    self.log.info(f'Waited {duration*1000:5.1f} ms for upload of wave {waveform_ref.wave_number}')
+            except:
+                raise Exception('Error loading/queueing waveform on {self.name} ch{awg_number}')
 
             waveform_ref.enqueued()
             self._enqueued_waverefs[awg_number].append(waveform_ref)
@@ -600,6 +602,12 @@ class SD_AWG_Async(SD_AWG):
         self._upload(wave, ref)
         return ref
 
+    def release_waveform_memory(self) -> None:
+        """
+        Releases all AWG memory regardless of any references being held.
+        """
+        if self.asynchronous():
+            self._memory_manager.release_all()
 
     def close(self) -> None:
         """
