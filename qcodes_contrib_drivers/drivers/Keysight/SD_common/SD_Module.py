@@ -125,6 +125,10 @@ class SD_Module(Instrument):
                            get_cmd=self.get_open,
                            docstring='Indicating if device is open, '
                                      'True (open) or False (closed)')
+        self.add_parameter('temperature',
+                           label='temperature',
+                           get_cmd=self.get_temperature,
+                           docstring='Module temperature')
 
     #
     # Get-commands
@@ -368,6 +372,9 @@ class SD_Module(Instrument):
         value = self.SD_module.getTypeByIndex(index)
         value_name = 'type'
         return result_parser(value, value_name, verbose)
+
+    def get_temperature(self) -> float:
+        return self.SD_module.getTemperature()
 
     #
     # The methods below are useful for controlling the device, but are not
