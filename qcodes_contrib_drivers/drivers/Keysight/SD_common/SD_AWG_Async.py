@@ -714,7 +714,15 @@ class SD_AWG_Async(SD_AWG):
 
             wave = keysightSD1.SD_Wave()
             result_parser(wave.newFromArrayDouble(keysightSD1.SD_WaveformTypes.WAVE_ANALOG, wave_data))
-            super().reload_waveform(wave, wave_ref.wave_number)
+            try:
+                super().reload_waveform(wave, wave_ref.wave_number)
+            except Exception as ex:
+                # Keysight driver sometimes just fails with error -8033
+                if '(-8033)' in str(ex):
+                    self.log.warning(f'upload waveform failed (-8033); retrying upload')
+                    super().reload_waveform(wave, wave_ref.wave_number)
+                else:
+                    raise
 
             duration = time.perf_counter() - start
             speed = len(wave_data)/duration
