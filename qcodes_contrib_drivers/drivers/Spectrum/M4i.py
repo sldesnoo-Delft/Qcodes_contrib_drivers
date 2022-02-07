@@ -700,6 +700,14 @@ class M4i(Instrument):
             allchannels = allchannels + getattr(pyspcm, 'CHANNEL%d' % ch)
 
         self.enable_channels(allchannels)
+        self._write_settings()
+
+    def _write_settings(self):
+        """
+        Writes changed settings to hardware.
+        Channel input termination and coupling will be switched in hardware.
+        """
+        self.general_command(pyspcm.M2CMD_CARD_WRITESETUP)
 
     def _channel_mask(self, channels=range(4)):
         """ Return mask for specified channels
@@ -764,6 +772,7 @@ class M4i(Instrument):
         # can only be used with DC coupling and 50 Ohm path (hf)
         if compensation is not None:
             self.set(f'ACDC_offs_compensation_{channel_index}', compensation)
+        self._write_settings()
 
     def set_ext0_OR_trigger_settings(self, trig_mode, termination, coupling, level0, level1=None):
         """ Configures ext0 trigger
